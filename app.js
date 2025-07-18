@@ -1,43 +1,29 @@
-const express = require('express');
-const app = express();
+const express = require("express");
+const cors = require("cors");
 
-// Enable CORS for FCC testing
-const cors = require('cors');
+const app = express();
 app.use(cors());
 
-// Root route
 app.get("/", (req, res) => {
-  res.send("Timestamp Microservice");
+  res.send("Request Header Parser Microservice");
 });
 
-// Timestamp API route
-app.get("/api", (req, res) => {
-  const date = new Date();
+// ✅ Main endpoint
+app.get("/api/whoami", (req, res) => {
+  const ipaddress =
+    req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+
+  const language = req.headers["accept-language"]; // ← This line is correct
+  const software = req.headers["user-agent"]; // ← This line is correct
+
   res.json({
-    unix: date.getTime(),
-    utc: date.toUTCString()
+    ipaddress,
+    language,
+    software,
   });
 });
 
-app.get("/api/:date", (req, res) => {
-  const dateParam = req.params.date;
-
-  // Check if it's a number (UNIX timestamp)
-  const date = !isNaN(dateParam)
-    ? new Date(Number(dateParam))
-    : new Date(dateParam);
-
-  if (date.toString() === "Invalid Date") {
-    return res.json({ error: "Invalid Date" });
-  }
-
-  res.json({
-    unix: date.getTime(),
-    utc: date.toUTCString()
-  });
-});
-
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`App running on port ${PORT}`);
+  console.log(`Listening on port ${PORT}`);
 });
